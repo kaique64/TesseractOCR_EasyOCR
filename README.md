@@ -3,6 +3,8 @@
 Pipeline simples: **segmentação → pré-processamento → OCR (Tesseract ou EasyOCR)**.
 Os dois OCRs reaproveitam as mesmas etapas de segmentação e pré-processamento.
 
+**Documentação detalhada da implementação:** [`docs/implementacao.md`](docs/implementacao.md)
+
 ## Estrutura
 ```
 dataset/                            imagens de entrada
@@ -15,6 +17,8 @@ src/geometria.py                    desempate de pares parecidos (I/L, Y/V, Q/O,
 main_easyocr.py          pipeline completo com EasyOCR -> results/resultados_easyocr.txt
 main_tesseract.py        executa tudo e grava os resultados
 comparar.py              roda os dois pipelines e gera o comparativo -> results/comparativo.txt
+results/comparativo.txt  leitura por placa + resumo de acurácia + desempenho
+results/desempenho.png   gráficos de CPU/RAM/GPU e barras-resumo por engine
 results/resultados_tesseract.txt    arquivo, texto_bruto, texto_corrigido
 results/debug/                      placa recortada, binarizada e detecção por imagem
 results/avaliacao_tesseract.txt     comparação com o gabarito
@@ -96,6 +100,13 @@ Para reavaliar: `python main_tesseract.py && python avaliar.py`
 Mesma segmentação e mesmo pré-processamento; muda só o OCR (veja a seção
 "Como a detecção de placas funciona" acima). Para gerar o comparativo placa a placa:
 `python comparar.py` (grava em `results/comparativo.txt`).
+
+O `comparar.py` também mede o desempenho de execução de cada engine (CPU % da árvore de
+processos, memória RSS e utilização da GPU via `nvidia-smi`, amostrados a cada 0,25 s) e
+grava os gráficos em `results/desempenho.png`; o resumo numérico vai para o
+`results/comparativo.txt`. Obs.: a GPU mostrada é o uso global da placa; neste ambiente o
+EasyOCR roda com `gpu=False` (CPU-only), então o painel de GPU é apenas informativo.
+Dependências extras: `psutil` e `matplotlib` (já no `requirements.txt`).
 
 | Etapa (EasyOCR)                    | Placas exatas | Caracteres |
 |------------------------------------|---------------|------------|
