@@ -8,7 +8,7 @@ from collections import Counter
 import cv2
 
 from src.geometria import desempatar_placa
-from src.ocr_tesseract import ALFABETO, PADRAO, corrigir_padrao
+from src.utils.ocr_utils import ALFABETO, PADRAO, corrigir_padrao
 from src.preprocessamento import VARIANTES, binarizar, isolar_caracteres
 
 _leitor = None
