@@ -316,3 +316,123 @@ imagens do dataset (fonte única), então são sensíveis a mudanças de fonte/e
 
 > Os limiares marcados como "calibrados" foram ajustados nas mesmas 20 imagens usadas na
 > avaliação; o desempenho em imagens novas pode ser menor.
+
+---
+
+## 10. Desempate geométrico: por que e como funciona hoje
+
+Esta seção consolida a motivação e o comportamento **atual** do desempate geométrico no
+código. O walkthrough do módulo está na [seção 6](#6-srcgeometriapy--desempate-pela-forma-do-glifo).
+
+### 10.1 Por que utilizamos
+
+Os dois OCRs acertam a **classe** do caractere (letra ou número), mas confundem de forma
+consistente alguns pares **dentro da mesma classe**:
+
+- letras: `I/L`, `Y/V`, `Q/O`;
+- números: `7/2`, `1/4`.
+
+Três motivos tornam esse problema relevante e justificam uma etapa dedicada:
+
+1. **A correção de padrão não resolve.** `corrigir_padrao` só troca a classe de acordo com
+   o formato `LLLNLNN` (ex.: um `O` em posição numérica vira `0`). Se o `O` foi lido onde
+   deveria ser `Q`, trocar a classe não ajuda — o caractere já é uma letra válida.
+2. **O voto por posição também não resolve.** Ele escolhe o caractere mais frequente entre
+   as 8 (Tesseract) ou 4 (EasyOCR) leituras. Quando o modelo/Tesseract tem viés sistemático
+   e **todas** as leituras erram para o mesmo lado, a maioria simplesmente confirma o erro.
+3. **A forma do glifo carrega a informação que falta.** Na etapa 2, `isolar_caracteres` já
+   devolve a máscara binária de cada caractere. Características simples de distribuição de
+   tinta (largura do topo, largura da base, tinta no canto inferior-direito) separam esses
+   pares com limiares estáveis para a fonte da placa Mercosul.
+
+No EasyOCR, o desempate levou 13/20 para 21/21 placas exatas no dataset (ressalva: foi
+calibrado nas mesmas imagens). No Tesseract ele cobre apenas `I/L` — ver 10.5.
+
+### 10.2 Entradas e pré-condições (código atual)
+
+`geometria.desempatar_placa(texto, mascaras, padrao)` recebe:
+
+| Argumento  | Origem | Papel |
+|------------|--------|-------|
+| `texto`    | resultado do voto por posição | caracteres a desempatar (7 posições) |
+| `mascaras` | `isolar_caracteres` da variante `blur7` | forma binária de cada glifo, na ordem da esquerda para a direita |
+| `padrao`   | constante `PADRAO = "LLLNLNN"` | define se a posição é letra (`L`) ou número (`N`) |
+
+A variante `blur7` é usada como referência porque reduz a marca d'água sem borrar demais
+os glifos. **Pré-condição:** a função só atua quando há exatamente **7 caracteres e
+7 máscaras**; caso contrário devolve o texto original sem alterações (o alinhamento
+posição a posição deixa de ser confiável).
+
+### 10.3 Medidas auxiliares
+
+- `_largura(m, a, b)`: fração das **colunas** do glifo com tinta nas linhas entre `a·h` e
+  `b·h`. Responde “quão larga é a tinta numa faixa vertical”.
+- `_razao_inferior_direita(m)`: tinta na metade direita da faixa inferior (75–100 % da
+  altura) dividida pela metade esquerda. A cauda do `Q` eleva essa razão.
+- **Guarda inicial:** se `largura/altura > 1.6`, a máscara é larga demais para um caractere
+  (provável fragmento de borda colado) e **nada** é alterado.
+
+### 10.4 Regras por par
+
+A regra só é aplicada quando o caractere atual pertence ao par e a posição é compatível
+com o `tipo` (`L` = letra, `N` = número). `base` é `_largura(m, 0.85, 1.0)`.
+
+| Par | Tipo | Medida | Decisão |
+|-----|------|--------|---------|
+| `I/L` | `L` | tinta nos 15 % do topo | `> 0.45` → `I` (serifa); senão `L` |
+| `Y/V` | `L` | tinta em 85–95 % da altura | `< 0.42` → `Y` (haste fina); senão `V` |
+| `O/Q` | `L` | `_razao_inferior_direita` | `> 1.08` → `Q` (cauda); senão `O` |
+| `7/2` | `N` | `base` | `< 0.6` → `7` (base estreita); senão `2` |
+| `1/4` | `N` | `base` | `< 0.6` → `4` (sem barra de base); senão `1` |
+
+Pseudocódigo do fluxo:
+
+```python
+if mascara_larga(w / h > 1.6):
+    return caractere            # fragmento: não mexe
+if tipo == "L" and caractere in "IL":
+    return "I" if tinta_topo > 0.45 else "L"
+if tipo == "L" and caractere in "YV":
+    return "Y" if tinta_85_95 < 0.42 else "V"
+if tipo == "L" and caractere in "OQ":
+    return "Q" if razao_inferior_direita > 1.08 else "O"
+if tipo == "N" and caractere in "27":
+    return "7" if base < 0.6 else "2"
+if tipo == "N" and caractere in "14":
+    return "4" if base < 0.6 else "1"
+return caractere                # par não coberto: mantém
+```
+
+`desempatar_placa` aplica essa rotina em cada uma das 7 posições, escolhendo o `tipo` pelo
+`padrao`.
+
+### 10.5 Estado atual da integração
+
+- **EasyOCR (`src/ocr_easyocr.py`)** — integração completa. Depois do voto por posição,
+  chama `desempatar_placa("".join(final), mascaras_ref, PADRAO)`, cobrindo os cinco pares.
+- **Tesseract (`src/ocr_tesseract.py`)** — **não** usa `src/geometria.py`. Tem um desempate
+  inline restrito a `I/L`: mede a tinta nos 15 % superiores do glifo (`_largura_topo`) e
+  decide `I` se `> 0.45`, senão `L`, apenas em posições `L`.
+
+**Consequência:** o Tesseract continua sujeito a erros de `Y/V`, `Q/O`, `2/7` e `1/4` que
+a geometria já resolveria. Por isso a comparação de acurácia entre os dois motores não é
+totalmente justa (o mesmo aviso está no README).
+
+### 10.6 Limitações e riscos
+
+- **Calibração no mesmo dataset.** Todos os limiares (`0.45`, `0.42`, `1.08`, `0.6`, `1.6`)
+  foram ajustados nas mesmas 20 imagens da avaliação — risco de *overfit*; em imagens novas
+  o desempate pode piorar uma leitura que estava correta.
+- **Depende de máscara limpa.** Se `isolar_caracteres` fragmentar ou fundir glifos, as
+  medidas de tinta mudam e a decisão pode errar.
+- **Exige 7 glifos.** Se a segmentação perder ou sobrar um caractere, o desempate não roda.
+- **Específico da fonte Mercosul.** É uma heurística de forma; outra fonte/escala exige
+  recalibração das medidas e limiares.
+
+### 10.7 Como estender ao Tesseract (nota)
+
+Para igualar o comportamento do EasyOCR, bastaria, ao final de `ocr_tesseract.ler_placa`,
+substituir o bloco inline de `I/L` por uma chamada a
+`geometria.desempatar_placa("".join(final), mascaras_ref or [], PADRAO)`. Isso aproveita as
+mesmas máscaras de `blur7` já coletadas e habilita os cinco pares. (Indicação de extensão;
+não está implementado.)
