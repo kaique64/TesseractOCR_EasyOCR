@@ -14,11 +14,11 @@ src/preprocessamento.py             recorte, normalização de iluminação, CLA
 src/ocr_tesseract.py                Tesseract (psm 7/13, whitelist A-Z/0-9), voto e correção de padrão
 src/ocr_easyocr.py                  EasyOCR (recognize na linha, allowlist A-Z/0-9), voto e correção de padrão
 src/geometria.py                    desempate de pares parecidos (I/L, Y/V, Q/O, 7/2, 4/1) pela forma do glifo
-main_easyocr.py          pipeline completo com EasyOCR -> results/resultados_easyocr.txt
-main_tesseract.py        executa tudo e grava os resultados
-comparar.py              roda os dois pipelines e gera o comparativo -> results/comparativo.txt
-results/comparativo.txt  leitura por placa + resumo de acurácia + desempenho
-results/desempenho.png   gráficos de CPU/RAM/GPU e barras-resumo por engine
+main_easyocr.py                     pipeline completo com EasyOCR -> results/resultados_easyocr.txt
+main_tesseract.py                   executa tudo e grava os resultados
+comparar.py                         roda os dois pipelines e gera o comparativo -> results/comparativo.txt
+results/comparativo.txt             leitura por placa + resumo de acurácia + desempenho
+results/desempenho.png              gráficos de CPU/RAM/GPU e barras-resumo por engine
 results/resultados_tesseract.txt    arquivo, texto_bruto, texto_corrigido
 results/debug/                      placa recortada, binarizada e detecção por imagem
 results/avaliacao_tesseract.txt     comparação com o gabarito
