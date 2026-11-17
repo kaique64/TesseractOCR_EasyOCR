@@ -1,0 +1,22 @@
+Placas exatas: 16/21 (76%) | Caracteres corretos: 96.6%
+ 1 OK  esperado=IFA1T95 lido=IFA1T95
+ 2 OK  esperado=NEV1C08 lido=NEV1C08
+ 2 OK  esperado=TAD0P66 lido=TAD0P66
+ 3 OK  esperado=IYZ2Z18 lido=IYZ2Z18
+ 4 ERR esperado=QOW9N47 lido=QOW0N47
+ 5 OK  esperado=USQ0T32 lido=USQ0T32
+ 6 OK  esperado=TYL3X75 lido=TYL3X75
+ 7 ERR esperado=GXQ2J95 lido=GXQ2I95
+ 8 OK  esperado=XHY6U29 lido=XHY6U29
+ 9 ERR esperado=AOA4J16 lido=AQA4J16
+10 ERR esperado=PDU7G22 lido=PDU7E22
+11 OK  esperado=MNL3U98 lido=MNL3U98
+12 OK  esperado=JET7G88 lido=JET7G88
+13 OK  esperado=ABP8Q89 lido=ABP8Q89
+14 OK  esperado=PHI8H00 lido=PHI8H00
+15 OK  esperado=THY7E19 lido=THY7E19
+16 OK  esperado=UHK5O55 lido=UHK5O55
+17 OK  esperado=NZQ3M77 lido=NZQ3M77
+18 OK  esperado=XDA5E50 lido=XDA5E50
+19 OK  esperado=ESI4I93 lido=ESI4I93
+20 ERR esperado=TGG1D44 lido=TGG4D44

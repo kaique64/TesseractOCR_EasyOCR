@@ -1,0 +1,31 @@
+img  Tesseract    EasyOCR      esperado
+  1    IFA1T95  OK   IFA1T95  OK   esperado=IFA1T95
+  2    NEV1C08  OK   NEV1C08  OK   esperado=NEV1C08
+  2    TAD0P66  OK   TAD0P66  OK   esperado=TAD0P66
+  3    IYZ2Z18  OK   IYZ2Z18  OK   esperado=IYZ2Z18
+  4    QOW0N47  ERR  QOW9N47  OK   esperado=QOW9N47
+  5    USQ0T32  OK   USQ0T32  OK   esperado=USQ0T32
+  6    TYL3X75  OK   TYL3X75  OK   esperado=TYL3X75
+  7    GXQ2I95  ERR  GXQ2J95  OK   esperado=GXQ2J95
+  8    XHY6U29  OK   XHY6U29  OK   esperado=XHY6U29
+  9    AQA4J16  ERR  AOA4J16  OK   esperado=AOA4J16
+ 10    PDU7E22  ERR  PDU7G22  OK   esperado=PDU7G22
+ 11    MNL3U98  OK   MNL3U98  OK   esperado=MNL3U98
+ 12    JET7G88  OK   JET7G88  OK   esperado=JET7G88
+ 13    ABP8Q89  OK   ABP8Q89  OK   esperado=ABP8Q89
+ 14    PHI8H00  OK   PHI8H00  OK   esperado=PHI8H00
+ 15    THY7E19  OK   THY7E19  OK   esperado=THY7E19
+ 16    UHK5O55  OK   UHK5O55  OK   esperado=UHK5O55
+ 17    NZQ3M77  OK   NZQ3M77  OK   esperado=NZQ3M77
+ 18    XDA5E50  OK   XDA5E50  OK   esperado=XDA5E50
+ 19    ESI4I93  OK   ESI4I93  OK   esperado=ESI4I93
+ 20    TGG4D44  ERR  TGG1D44  OK   esperado=TGG1D44
+
+Tesseract  Placas exatas: 16/21 (76%) | Caracteres: 96.6%
+EasyOCR    Placas exatas: 21/21 (100%) | Caracteres: 100.0%
+
+Desempenho de execução (nesta corrida):
+  Tesseract  tempo=15.3s | CPU médio=34% pico=795% | RAM pico=129MB médio=106MB | GPU médio=4% pico=26%
+  EasyOCR    tempo=7.3s | CPU médio=307% pico=893% | RAM pico=1336MB médio=807MB | GPU médio=2% pico=10%
+  GPU: uso global da placa (nvidia-smi)
+  Gráfico: results/desempenho.png
